@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestSum(t *testing.T) {
 	numbers := []int{1, 2, 3, 4, 5}
@@ -36,4 +39,24 @@ func TestSum(t *testing.T) {
 		}
 	})
 
+}
+
+//重构之后，不用担心切片元素会超过容量
+
+func TestSumAll(t *testing.T) {
+	got := SumAll([]int{1, 2}, []int{0, 9})
+	want := []int{3, 9}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+
+func TestSumAllTails(t *testing.T) {
+	got := SumAllTails([]int{1, 2}, []int{0, 9})
+	want := []int{2, 9}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v want %v", got, want)
+	}
 }
