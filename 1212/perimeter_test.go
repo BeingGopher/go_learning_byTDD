@@ -15,6 +15,24 @@ func TestPerimeter(t *testing.T) {
 
 func TestArea(t *testing.T) {
 
+	//表格驱动测试在我们要创建一系列相同测试方式的测试用例时很有用
+	//如果你要测试一个接口的不同实现，或者传入函数的数据有很多不同的测试需求，可用此方法。
+	areaTests := []struct {
+		shape Shape
+		want  float64
+	}{
+		{Rectangle{12, 6}, 72},
+		{Circle{10}, 314.1592653589793},
+		{Triangle{12, 6}, 36.0},
+	}
+
+	for _, tt := range areaTests {
+		got := tt.shape.Area()
+		if got != tt.want {
+			t.Errorf("got %.2f want %.2f", got, tt.want)
+		}
+	}
+
 	checkArea := func(t *testing.T, shape Shape, want float64) {
 		t.Helper()
 		got := shape.Area()
