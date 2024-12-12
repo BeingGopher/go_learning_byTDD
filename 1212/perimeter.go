@@ -30,3 +30,9 @@ type Circle struct {
 func (c Circle) Area() float64 {
 	return math.Pi * c.r * c.r
 }
+
+//通过声明一个接口，辅助函数能从具体类型解耦而只关心方法本身需要做的工作。
+
+type Shape interface {
+	Area() float64
+}
