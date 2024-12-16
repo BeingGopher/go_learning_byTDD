@@ -14,6 +14,7 @@ func (w *Wallet) Deposit(amount int) {
 }
 
 // 用 指针 来解决这个问题。指针让我们 指向 某个值，然后修改它。(添加*)
+// 指向 wallet 的指针
 func (w *Wallet) Balance() int {
 	return w.balance
 }
