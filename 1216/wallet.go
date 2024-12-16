@@ -19,7 +19,9 @@ func (w *Wallet) Deposit(amount Bitcoin) {
 }
 
 // 用指针来解决这个问题。指针让我们指向某个值，然后修改它。(添加*)
+
 // 指向wallet的指针
+
 func (w *Wallet) Balance() Bitcoin {
 	return w.balance
 }
@@ -32,13 +34,15 @@ func (b Bitcoin) String() string {
 	return fmt.Sprintf("%d BTC", b)
 }
 
+//不能透支钱包里的钱，需要引出一个错误
+
+var InsufficientFundsError = errors.New("cannot withdraw, insufficient funds")
+
 func (w *Wallet) Withdraw(amount Bitcoin) error {
 
 	if amount > w.balance {
-		return errors.New("哇贞德食泥鸭")
+		return InsufficientFundsError
 	}
 	w.balance -= amount
 	return nil
 }
-
-//不能透支钱包里的钱，需要引出一个错误
