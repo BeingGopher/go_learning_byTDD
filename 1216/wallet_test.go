@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestWallet(t *testing.T) {
 
@@ -9,6 +12,9 @@ func TestWallet(t *testing.T) {
 	wallet.Deposit(10)
 
 	got := wallet.Balance()
+	//通过打印语句调试
+	fmt.Println("address of balance in test is", &wallet.balance)
+
 	want := 10
 
 	if got != want {
