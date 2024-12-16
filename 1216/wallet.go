@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type Bitcoin int
 
@@ -15,8 +18,8 @@ func (w *Wallet) Deposit(amount Bitcoin) {
 	w.balance += amount
 }
 
-// 用 指针 来解决这个问题。指针让我们 指向 某个值，然后修改它。(添加*)
-// 指向 wallet 的指针
+// 用指针来解决这个问题。指针让我们指向某个值，然后修改它。(添加*)
+// 指向wallet的指针
 func (w *Wallet) Balance() Bitcoin {
 	return w.balance
 }
@@ -29,6 +32,13 @@ func (b Bitcoin) String() string {
 	return fmt.Sprintf("%d BTC", b)
 }
 
-func (w *Wallet) Withdraw(amount Bitcoin) {
+func (w *Wallet) Withdraw(amount Bitcoin) error {
+
+	if amount > w.balance {
+		return errors.New("哇贞德食泥鸭")
+	}
 	w.balance -= amount
+	return nil
 }
+
+//不能透支钱包里的钱，需要引出一个错误
