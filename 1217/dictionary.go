@@ -71,3 +71,8 @@ func (d Dictionary) Update(word, definition string) error {
 	}
 	return nil
 }
+
+func (d Dictionary) Delete(word string) {
+	//Go 的 map 有一个内置函数 delete。它需要两个参数。第一个是这个 map，第二个是要删除的键。
+	delete(d, word)
+}
