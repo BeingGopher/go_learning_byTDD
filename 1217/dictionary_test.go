@@ -43,20 +43,29 @@ func assertError(t *testing.T, got, want error) {
 }
 
 // 编写添加新单词功能测试
+
+// 重构
 func TestAdd(t *testing.T) {
 	dictionary := Dictionary{}
-	dictionary.Add("test", "再多看一眼就会爆炸")
+	word := "test"
+	definition := "再多看一眼就会爆炸"
 
-	want := "再多看一眼就会爆炸"
-	got, err := dictionary.Search("test")
+	dictionary.Add(word, definition)
+
+	assertDefinition(t, dictionary, word, definition)
+}
+
+func assertDefinition(t *testing.T, dictionary Dictionary, word, definition string) {
+	t.Helper()
+
+	got, err := dictionary.Search(word)
 	if err != nil {
 		t.Fatal("should find added word:", err)
 	}
 
-	if want != got {
-		t.Errorf("got '%s' want '%s'", got, want)
+	if definition != got {
+		t.Errorf("got '%s' want '%s'", got, definition)
 	}
-
 }
 
 //map 是引用类型。这意味着它拥有对底层数据结构的引用，就像指针一样。
