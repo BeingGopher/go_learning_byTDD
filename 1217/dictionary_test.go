@@ -16,14 +16,9 @@ func TestSearch(t *testing.T) {
 	})
 
 	t.Run("unknown word", func(t *testing.T) {
-		_, err := dictionary.Search("unknown")
-		want := "你脑袋怎么尖尖的"
+		_, got := dictionary.Search("unknown")
 
-		if err == nil {
-			t.Fatal("expected to get an error")
-		}
-
-		assertStrings(t, err.Error(), want)
+		assertError(t, got, ErrNotFound)
 	})
 
 }
@@ -35,5 +30,14 @@ func assertStrings(t *testing.T, got, want string) {
 
 	if got != want {
 		t.Errorf("got '%s' want '%s'", got, want)
+	}
+}
+
+// 创建新的辅助函数来简化测试，并调用ErrNotFound变量
+func assertError(t *testing.T, got, want error) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("got error '%s' want '%s'", got, want)
 	}
 }
