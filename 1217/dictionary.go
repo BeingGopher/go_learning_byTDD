@@ -1,7 +1,5 @@
 package main
 
-import "errors"
-
 type Dictionary map[string]string
 
 //初始化空map方法如下
@@ -15,10 +13,17 @@ type Dictionary map[string]string
 
 //重构
 
-var (
-	ErrNotFound   = errors.New("你脑袋怎么尖尖的")
-	ErrWordExists = errors.New("住手，你们不要再打了啦")
+// 重构，将错误声明为常量，这需要我们创建自己的 DictionaryErr 类型来实现 error 接口
+const (
+	ErrNotFound   = DictionaryErr("你脑袋怎么尖尖的")
+	ErrWordExists = DictionaryErr("住手，你们不要再打了啦")
 )
+
+type DictionaryErr string
+
+func (e DictionaryErr) Error() string {
+	return string(e)
+}
 
 func (d Dictionary) Search(word string) (string, error) {
 	//接受者、实例类型； 空格后是方法，方法内是传参；最后是返回值类型
