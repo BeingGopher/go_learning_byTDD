@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSearch(t *testing.T) {
 	//map 关键字开头，需要两种类型。第一个是键的类型，写在 [] 中。第二个是值的类型，跟在 [] 之后。
@@ -45,6 +47,7 @@ func assertError(t *testing.T, got, want error) {
 // 编写添加新单词功能测试
 
 // 重构
+
 func TestAdd(t *testing.T) {
 	dictionary := Dictionary{}
 	word := "test"
@@ -53,6 +56,29 @@ func TestAdd(t *testing.T) {
 	dictionary.Add(word, definition)
 
 	assertDefinition(t, dictionary, word, definition)
+
+	//新功能：add应该只添加新的，如果已经有了，则不添加
+	t.Run("new word", func(t *testing.T) {
+		dictionary := Dictionary{}
+		word := "test"
+		definition := "再多看一眼就会爆炸"
+
+		err := dictionary.Add(word, definition)
+
+		assertError(t, err, nil)
+		assertDefinition(t, dictionary, word, definition)
+	})
+
+	t.Run("existing word", func(t *testing.T) {
+		dictionary := Dictionary{word: definition}
+		word := "test"
+		definition := "再多看一眼就会爆炸"
+
+		err := dictionary.Add(word, "new test")
+
+		assertError(t, err, ErrWordExists)
+		assertDefinition(t, dictionary, word, definition)
+	})
 }
 
 func assertDefinition(t *testing.T, dictionary Dictionary, word, definition string) {

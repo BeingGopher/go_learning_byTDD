@@ -15,7 +15,10 @@ type Dictionary map[string]string
 
 //重构
 
-var ErrNotFound = errors.New("你脑袋怎么尖尖的")
+var (
+	ErrNotFound   = errors.New("你脑袋怎么尖尖的")
+	ErrWordExists = errors.New("住手，你们不要再打了啦")
+)
 
 func (d Dictionary) Search(word string) (string, error) {
 	//接受者、实例类型； 空格后是方法，方法内是传参；最后是返回值类型
@@ -34,6 +37,16 @@ func Search(dictionary map[string]string, word string) string {
 	return dictionary[word]
 }
 
-func (d Dictionary) Add(word, definition string) {
-	d[word] = definition
+func (d Dictionary) Add(word, definition string) error {
+	_, err := d.Search(word)
+
+	switch err {
+	case ErrNotFound:
+		d[word] = definition
+	case nil:
+		return ErrWordExists
+	default:
+		return err
+	}
+	return nil
 }
