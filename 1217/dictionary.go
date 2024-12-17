@@ -15,8 +15,9 @@ type Dictionary map[string]string
 
 // 重构，将错误声明为常量，这需要我们创建自己的 DictionaryErr 类型来实现 error 接口
 const (
-	ErrNotFound   = DictionaryErr("你脑袋怎么尖尖的")
-	ErrWordExists = DictionaryErr("住手，你们不要再打了啦")
+	ErrNotFound         = DictionaryErr("你脑袋怎么尖尖的")
+	ErrWordExists       = DictionaryErr("住手，你们不要再打了啦")
+	ErrWordDoesNotExist = DictionaryErr("流脓")
 )
 
 type DictionaryErr string
@@ -50,6 +51,21 @@ func (d Dictionary) Add(word, definition string) error {
 		d[word] = definition
 	case nil:
 		return ErrWordExists
+	default:
+		return err
+	}
+	return nil
+}
+
+func (d Dictionary) Update(word, definition string) error {
+	_, err := d.Search(word)
+
+	switch err {
+	case ErrNotFound:
+
+		return ErrWordDoesNotExist
+	case nil:
+		d[word] = definition
 	default:
 		return err
 	}

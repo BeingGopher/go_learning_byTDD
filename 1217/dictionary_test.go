@@ -98,3 +98,38 @@ func assertDefinition(t *testing.T, dictionary Dictionary, word, definition stri
 //无论 map 有多大，都只会有一个副本。
 /*引用类型引入了 maps 可以是 nil 值。如果你尝试使用一个 nil 的 map，你会得到一个 nil 指针异常，这将导致程序终止运行。
 由于 nil 指针异常，你永远不应该初始化一个空的 map 变量*/
+
+func TestUpdate(t *testing.T) {
+	word := "test"
+	definition := "不是哥们"
+	dictionary := Dictionary{word: definition}
+	newDefinition := "防守狙不杀人"
+
+	dictionary.Update(word, newDefinition)
+
+	assertDefinition(t, dictionary, word, newDefinition)
+
+	t.Run("existing word", func(t *testing.T) {
+		word := "test"
+		definition := "不是哥们"
+		newDefinition := "防守狙不杀人"
+		dictionary := Dictionary{word: definition}
+
+		err := dictionary.Update(word, newDefinition)
+
+		assertError(t, err, nil)
+		assertDefinition(t, dictionary, word, newDefinition)
+	})
+
+	t.Run("new word", func(t *testing.T) {
+		word := "test"
+		definition := "不是哥们"
+		dictionary := Dictionary{}
+
+		err := dictionary.Update(word, definition)
+
+		assertError(t, err, ErrWordDoesNotExist)
+
+	})
+
+}
