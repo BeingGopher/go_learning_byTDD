@@ -41,3 +41,20 @@ func assertError(t *testing.T, got, want error) {
 		t.Errorf("got error '%s' want '%s'", got, want)
 	}
 }
+
+// 编写添加新单词功能测试
+func TestAdd(t *testing.T) {
+	dictionary := Dictionary{}
+	dictionary.Add("test", "再多看一眼就会爆炸")
+
+	want := "再多看一眼就会爆炸"
+	got, err := dictionary.Search("test")
+	if err != nil {
+		t.Fatal("should find added word:", err)
+	}
+
+	if want != got {
+		t.Errorf("got '%s' want '%s'", got, want)
+	}
+
+}
