@@ -4,6 +4,15 @@ import "errors"
 
 type Dictionary map[string]string
 
+//初始化空map方法如下
+//var m map[string]string
+//或者使用make关键字，如下：
+/*
+  dictionary = map[string]string{}
+或
+  dictionary = make(map[string]string)
+*/
+
 //重构
 
 var ErrNotFound = errors.New("你脑袋怎么尖尖的")
