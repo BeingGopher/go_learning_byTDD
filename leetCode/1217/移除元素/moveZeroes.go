@@ -3,9 +3,9 @@ package main
 import "fmt"
 
 // 自己的解法
-func moveZeroes(nums []int) {
+func moveZeroes(nums []int) []int {
 	if len(nums) == 1 {
-		fmt.Println(nums)
+		return nums //定义了返回值的情况下，可以使用return
 
 	}
 
@@ -16,13 +16,13 @@ func moveZeroes(nums []int) {
 			slow++
 		}
 	}
-	fmt.Println(nums)
+	return nums
 
 }
 
 func main() {
 	nums := []int{0, 1, 0, 3, 12}
-	moveZeroes(nums)
+	fmt.Println(moveZeroes(nums))
 }
 
 /*注：打印和return的区别如下
