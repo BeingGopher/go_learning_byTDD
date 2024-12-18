@@ -13,20 +13,44 @@ import (
 const finalWord = "Go!"
 const countdownStart = 3
 
-func Countdown(out io.Writer) {
+func Countdown(out io.Writer, sleeper Sleeper) {
 	//使用fmt.Fprint传入一个io.Writer（例如 *bytes.Buffer）并发送一个 string。
 
 	for i := countdownStart; i > 0; i-- {
 		//向下计数的输出1秒的暂停，Go 可以通过 time.Sleep 实现这个功能
-		time.Sleep(1 * time.Second)
+		sleeper.Sleep()
 		fmt.Fprintln(out, i)
 	}
-	time.Sleep(1 * time.Second)
+	sleeper.Sleep()
 	fmt.Fprint(out, finalWord)
 }
 
 // 将函数应用到 main中。这样的话，我们就有了一些可工作的软件来确保我们的工作正在取得进展。
 // 在测试的支持下，将功能切分成小的功能点，并使其首尾相连顺利的运行。
+
+type Sleeper interface {
+	Sleep()
+}
+
+//监视器（spies）是一种 mock，它可以记录依赖关系是怎样被使用的。
+
+type SpySleeper struct {
+	Calls int
+}
+
+type ConfigurableSleeper struct {
+	duration time.Duration
+}
+
+func (o *ConfigurableSleeper) Sleep() {
+	time.Sleep(o.duration)
+}
+
+func (s *SpySleeper) Sleep() {
+	s.Calls++
+}
+
 func main() {
-	Countdown(os.Stdout)
+	sleeper := &ConfigurableSleeper{1 * time.Second}
+	Countdown(os.Stdout, sleeper)
 }
