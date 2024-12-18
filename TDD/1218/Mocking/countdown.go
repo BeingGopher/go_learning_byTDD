@@ -10,7 +10,12 @@ import (
 
 func Countdown(out io.Writer) {
 	//使用fmt.Fprint传入一个io.Writer（例如 *bytes.Buffer）并发送一个 string。
-	fmt.Fprint(out, "3")
+
+	for i := 3; i > 0; i-- {
+		fmt.Fprintln(out, i)
+	}
+
+	fmt.Fprint(out, "Go!")
 }
 
 // 将函数应用到 main中。这样的话，我们就有了一些可工作的软件来确保我们的工作正在取得进展。
