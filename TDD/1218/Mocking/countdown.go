@@ -13,6 +13,9 @@ import (
 const finalWord = "Go!"
 const countdownStart = 3
 
+const write = "write"
+const sleep = "sleep"
+
 func Countdown(out io.Writer, sleeper Sleeper) {
 	//使用fmt.Fprint传入一个io.Writer（例如 *bytes.Buffer）并发送一个 string。
 
@@ -20,7 +23,9 @@ func Countdown(out io.Writer, sleeper Sleeper) {
 		//向下计数的输出1秒的暂停，Go 可以通过 time.Sleep 实现这个功能
 		sleeper.Sleep()
 		fmt.Fprintln(out, i)
+
 	}
+
 	sleeper.Sleep()
 	fmt.Fprint(out, finalWord)
 }
@@ -48,6 +53,19 @@ func (o *ConfigurableSleeper) Sleep() {
 
 func (s *SpySleeper) Sleep() {
 	s.Calls++
+}
+
+type CountdownOperationsSpy struct {
+	Calls []string
+}
+
+func (s *CountdownOperationsSpy) Sleep() {
+	s.Calls = append(s.Calls, sleep)
+}
+
+func (s *CountdownOperationsSpy) Write(p []byte) (n int, err error) {
+	s.Calls = append(s.Calls, write)
+	return
 }
 
 func main() {
