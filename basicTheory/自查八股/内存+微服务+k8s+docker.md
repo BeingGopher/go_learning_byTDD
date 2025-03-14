@@ -1040,3 +1040,185 @@ endpoint不能与service进行关联。
 - **有状态应用**：对于有状态的应用，每个实例有独特的身份和数据，需要固定的网络标识来保证状态的一致性，无头 Service 可为每个 Pod 提供独立的网络身份。
 - **多播或广播场景**：在需要进行多播或广播的应用场景中，无头 Service 可使应用直接与多个目标 Pod 进行通信。
 
+## deployment怎么扩容或缩容？
+
+直接修改pod副本数即可，可以通过下面的方式来修改pod副本数：
+1、直接修改yaml文件的replicas字段数值，然后kubectl apply -f xxx.yaml来实现更新；
+2、使用kubectl edit deployment xxx 修改replicas来实现在线更新；
+3、使用kubectl scale --replicas=5 deployment/deployment-nginx命令来扩容缩容。
+
+## deployment的更新升级策略有哪些？
+
+deployment的升级策略主要有两种。
+1、Recreate 重建更新：这种更新策略会杀掉所有正在运行的pod，然后再重新创建的pod；
+2、rollingUpdate 滚动更新：这种更新策略，deployment会以滚动更新的方式来逐个更新pod，同时通
+过设置滚动更新的两个参数maxUnavailable、maxSurge来控制更新的过程。
+
+## 解释deployment的滚动更新策略两个特别主要的参数，
+
+### 1. `maxUnavailable`
+
+- **定义**：`maxUnavailable` 指定在更新过程中，可以不可用的Pod的最大数量或百分比。这意味着在更新过程中，最多可以有多少个Pod处于不可用状态。
+- **作用**：这个参数确保了在更新过程中，应用仍然有足够的Pod来处理请求，从而保证服务的连续性。
+- **取值**：可以是一个具体的数字（例如 `2`），也可以是一个百分比（例如 `25%`）。
+
+### 2. `maxSurge`
+
+- **定义**：`maxSurge` 指定在更新过程中，可以超出期望副本数的Pod的最大数量或百分比。这意味着在更新过程中，最多可以额外创建多少个Pod。
+- **作用**：这个参数确保了在更新过程中，可以快速创建新的Pod来替换旧的Pod，从而加快更新速度。
+- **取值**：可以是一个具体的数字（例如 `1`），也可以是一个百分比（例如 `25%`）。
+
+## deployment更新的命令有哪些
+
+可以通过三种方式来实现更新deployment。
+1、直接修改yaml文件的镜像版本，然后kubectl apply -f xxx.yaml来实现更新；
+2、使用kubectl edit deployment xxx 实现在线更新；
+3、使用kubectl set image deployment/nginx busybox=busybox nginx=nginx:1.9.1 命令来更新
+
+## 简述一下deployment的更新过程
+
+### 1. **触发更新**
+
+- **修改 Deployment**：通过更改 Deployment 的配置（如镜像版本、环境变量等）来触发更新。这可以通过 `kubectl apply`、`kubectl set image` 等命令完成。
+
+### 2. **创建新 ReplicaSet**
+
+- **生成新版本 ReplicaSet**：Deployment 会创建一个新的 ReplicaSet，该 ReplicaSet 定义了更新后的 Pod 模板（例如新的容器镜像）。
+- **设定副本数**：新 ReplicaSet 通常会从零开始逐步增加副本数量。
+
+### 3. **逐步替换旧 ReplicaSet 的 Pod**
+
+- **启动新 Pod**：新 ReplicaSet 开始创建新的 Pod 实例，这些 Pod 使用更新后的配置。
+- **终止旧 Pod**：与此同时，旧 ReplicaSet 会逐步终止部分旧的 Pod，确保在任何时刻都有一定数量的 Pod 处于运行状态。
+
+### 4. **控制更新速率**
+
+- **`maxUnavailable`**：定义在更新过程中最多可以有多少个 Pod 处于不可用状态。这确保了在更新过程中仍有足够的 Pod 处理流量。
+- **`maxSurge`**：定义在更新过程中最多可以额外创建多少个 Pod，以加快更新速度。
+
+### 5. **监控更新状态**
+
+- **检查新 Pod 状态**：Kubernetes 会监控新创建的 Pod 是否成功启动并通过健康检查。
+- **确保稳定性**：如果新 Pod 出现问题（如启动失败或健康检查不通过），Deployment 可能会暂停更新，以防止影响整个应用的稳定性。
+
+### 6. **完成更新**
+
+- **替换所有旧 Pod**：当新 ReplicaSet 中的所有 Pod 都成功启动并处于运行状态后，旧 ReplicaSet 会被逐步缩减，直至完全移除。
+- **更新完成**：Deployment 的更新过程完成，所有 Pod 都已使用新的配置运行。
+
+### 7. **回滚（可选）**
+
+- **自动或手动回滚**：如果在更新过程中发现问题，可以手动或自动触发回滚，恢复到之前的稳定版本。Kubernetes 支持通过 `kubectl rollout undo` 命令轻松实现回滚。
+
+## deployment的回滚使用什么命令
+
+使用 `kubectl rollout undo` 命令。
+
+例如，回滚到上一个版本：`kubectl rollout undo deployment/<deployment - name>`。
+
+若要回滚到指定版本，可使用 `--to-revision=<revision - number>` 参数，如 `kubectl rollout undo deployment/<deployment - name> --to-revision=2`。
+
+## 讲一下都有哪些存储卷，作用分别是什么?
+
+### emptyDir
+• **作用**：
+    ◦ 临时存储数据，在Pod生命周期内存在。当Pod被删除时，数据也会丢失。常用于Pod内不同容器间共享数据，比如一个容器生成数据，另一个容器处理这些数据。
+
+### hostPath
+• **作用**：
+    ◦ 将宿主机上的文件或目录挂载到Pod内。可用于访问宿主机上的特定资源，如日志文件、配置文件等，但要注意不同节点上宿主机路径的情况，跨节点Pod使用hostPath挂载同一路径会有风险。
+
+### configMap
+• **作用**：
+    ◦ 用于存储配置数据，以键值对的形式存在。可将配置数据注入到Pod中，方便应用程序读取配置信息，避免硬编码配置，提高配置的可维护性和灵活性。
+
+### secret
+• **作用**：
+    ◦ 类似于ConfigMap，但用于存储敏感信息，如密码、密钥等。数据在存储和传输过程中会进行加密处理，保障敏感信息的安全性。
+
+### persistentVolume（PV）和persistentVolumeClaim（PVC）
+• **作用**：
+    ◦ **PV**：由管理员创建和配置，是集群中的一块存储资源，有特定的存储类型（如NFS、Ceph等）、容量和访问模式等属性。
+    ◦ **PVC**：由用户创建，用来请求PV。PVC描述了用户对存储的需求（如容量、访问模式等），K8s会根据PVC的需求查找匹配的PV并将其绑定，使Pod可以使用该存储资源，实现存储资源在Pod间的共享和持久化。
+
+## pv的访问模式有哪几种
+
+ReadWriteOnce，简写：RWO 表示，只仅允许单个节点以读写方式挂载；
+ReadOnlyMany，简写：ROX 表示，可以被许多节点以只读方式挂载；
+ReadWriteMany，简写：RWX 表示，可以被多个节点以读写方式挂载；
+
+## pv的回收策略有哪几种
+
+主要有2中回收策略：retain 保留、delete 删除。
+Retain：保留，该策略允许手动回收资源，当删除PVC时，PV仍然存在，PV被视为已释放，管理员可以
+手动回收卷。
+Delete：删除，如果Volume插件支持，删除PVC时会同时删除PV，动态卷默认为Delete，目前支持
+Delete的存储后端包括AWS EBS，GCE PD，Azure Disk，OpenStack Cinder等。
+
+## 在pv的生命周期中，一般有几种状态
+
+Available，表示pv已经创建正常，处于可用状态；
+Bound，表示pv已经被某个pvc绑定，注意，一个pv一旦被某个pvc绑定，那么该pvc就独占该pv，其他
+pvc不能再与该pv绑定；
+Released，表示pvc被删除了，pv状态就会变成已释放；
+Failed，表示pv的自动回收失败；
+
+## 怎么使一个node脱离集群调度，比如要停机维护单又不能 影响业务应用
+
+### 使用 `kubectl drain`
+
+1. **标记节点不可调度**：
+   - 执行 `kubectl drain <node - name> --ignore - daemonsets --delete - emptydir - data`。
+   - 这个命令会将节点标记为不可调度，尝试驱逐节点上的Pod（除了DaemonSet管理的Pod和有本地存储且设置了 `emptyDir` 的Pod）。它会将Pod重新调度到其他可用节点上。
+2. **如果需要强制驱逐（某些Pod无法正常被驱逐时）**：
+   - 可以先对相关Pod执行 `kubectl delete pod <pod - name> --grace - period = 0 --force`，然后再执行 `kubectl drain` 命令。
+3. **维护完成后恢复节点调度**：
+   - 执行 `kubectl uncordon <node - name>`，这将使节点重新变为可调度状态。
+
+## pv存储空间不足怎么扩容
+
+一般的，我们会使用动态分配存储资源，在创建storageclass时指定参数 allowVolumeExpansion：
+true，表示允许用户通过修改pvc申请的存储空间自动完成pv的扩容，当增大pvc的存储空间时，不会重
+新创建一个pv，而是扩容其绑定的后端pv。这样就能完成扩容了。但是allowVolumeExpansion这个特
+性只支持扩容空间不支持减少空间。
+
+## k8s生产中遇到什么特别影响深刻的问题吗，问题排查解决 思路是怎么样的？
+
+#### 1. 资源不足
+• **问题描述**：节点或集群资源耗尽，导致新 Pod 无法调度或现有服务性能下降。
+
+> ### 排查思路
+>
+> - 确认资源使用情况
+>   - 使用`kubectl top nodes`和`kubectl top pods`命令查看节点和 Pod 的 CPU、内存使用情况，确定哪些资源处于紧张状态。
+>   - 借助 Kubernetes 的监控工具，如 Prometheus 结合 Grafana，查看资源使用的趋势和峰值，以便更全面地了解资源消耗情况。
+> - 检查 Pod 资源限制和请求
+>   - 查看 Pod 的定义，检查其资源请求（requests）和限制（limits）设置是否合理。不合理的设置可能导致资源分配不均衡。
+> - 查看节点状态和事件
+>   - 使用`kubectl describe node`命令查看节点的详细信息，包括节点条件、系统事件等，查看是否有相关的错误提示或警告信息。
+>   - 检查节点的健康状况，包括磁盘空间、网络连接等，确保节点本身没有故障。
+>
+> ### 解决方法
+>
+> - 增加资源
+>   - 如果是节点资源不足，可以考虑添加新的节点到集群中，以增加集群的资源总量。
+>   - 对现有节点进行资源升级，例如增加 CPU、内存等硬件资源。
+> - 资源优化与调整
+>   - 根据监控数据和业务需求，合理调整 Pod 的资源请求和限制，确保资源分配合理。对于一些资源使用不充分的 Pod，可以适当降低其资源请求，以释放更多资源给其他 Pod 使用。
+>   - 实施资源配额管理，在 Namespace 或集群级别设置资源配额，防止某些 Namespace 或用户过度占用资源。
+> - Pod 调度优化
+>   - 利用节点亲和性（Node Affinity）和反亲和性（Anti - Affinity）规则，将 Pod 调度到合适的节点上，避免资源竞争。
+>   - 考虑使用污点（Taints）和容忍（Tolerations）来限制 Pod 在特定节点上的调度，例如将一些关键任务的 Pod 调度到性能更好的节点上。
+> - 淘汰非关键 Pod
+>   - 如果资源紧张情况严重，可以考虑根据业务优先级，自动或手动淘汰一些非关键的 Pod，以释放资源给更重要的服务使用。可以使用 Kubernetes 的 HPA（Horizontal Pod Autoscaler）结合资源指标，自动调整 Pod 的副本数量，确保在资源有限的情况下，优先保障关键业务的运行。
+> - 优化应用程序
+>   - 对应用程序进行性能优化，降低其资源消耗。例如，优化数据库查询语句、减少内存泄漏、合理使用缓存等。
+>   - 分析业务流量和使用模式，看是否可以通过调整业务逻辑或架构，来减少对资源的需求。如采用微服务架构，将一些功能拆分成独立的服务，避免单个服务占用过多资源。
+
+#### 2. 镜像拉取失败
+
+• **问题描述**：Pod 创建时无法拉取指定镜像。
+• **排查思路**：
+    ◦ 检查镜像名称和标签：确认 `Deployment` 或 `Pod` 配置中的镜像名称、标签是否正确。
+    ◦ 查看镜像仓库权限：确保集群节点有权限访问指定的镜像仓库，检查认证信息等。
+    ◦ 检查网络连接：确认节点能够访问镜像仓库所在网络，排查网络策略、防火墙等限制 。
